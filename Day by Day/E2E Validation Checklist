@@ -1,0 +1,12 @@
+Run this checklist to validate your lab: (some important steps to look on)
+
+[ ] Describe instances and verify public/private IPs
+[ ] Confirm subnet route table has 0.0.0.0/0 -> IGW (for public)
+[ ] Ensure target SG allows necessary ports from attacker (22, 5985, 5986, 5601 as needed)
+[ ] Ensure Windows has WinRM listener and firewall rule
+[ ] From attacker: nc -vz <IP> <port> returns Connected
+[ ] From attacker: curl http(s) to /wsman returns 401 or XML (WinRM)
+[ ] pywinrm whoami returns user (test)
+[ ] evil-winrm interactive shell (optional)
+[ ] Kibana reachable at :5601 and index pattern created
+[ ] Terraform init works and state consistent (if using Terraform)
