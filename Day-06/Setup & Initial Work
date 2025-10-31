@@ -1,0 +1,18 @@
+Objective: Start lab, create initial EC2.
+
+#What I did
+Created first Amazon Linux EC2.
+
+Generated key pair purple-lab.pem.
+
+Used CloudShell for management.
+
+#ex command:
+ssh -i purple-lab.pem ec2-user@<public-ip>
+
+#Mistakes / Notes :
+
+None critical this day.
+
+#Lessons :
+Store .pem safely; know AMI username (ec2-user for Amazon Linux).
