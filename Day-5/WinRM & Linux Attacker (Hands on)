@@ -1,0 +1,41 @@
+From Linux attacker, reach Windows target via WinRM (HTTP/HTTPS), enable remote exec (pywinrm / evil-winrm).
+
+WHAT i DID
+
+Confirmed network reachability (private/public IPs).
+
+Diagnosed that nc -vz <IP> 5985 initially timed out → traced to SG/NACL/WinRM listener issues.
+
+Ensured security group inbound for WinRM port (5985 HTTP / 5986 HTTPS).
+
+On Windows target (Admin PowerShell) ran WinRM configuration and firewall rules.
+
+From Linux attacker used Python venv + pywinrm (pinned urllib3<2) to run whoami.
+
+Also attempted evil-winrm; faced Ruby version/OpenSSL issues; resolved by either installing Ruby >=3 or using Python approach.
+
+
+cOMMANDS I RAN 
+
+On Windows (Admin PowerShell)
+
+# HTTP WinRM quick config (lab)
+winrm quickconfig -q
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+winrm create winrm/config/Listener?Address=*+Transport=HTTP
+
+# open Windows firewall for HTTP WinRM
+netsh advfirewall firewall add rule name="WinRM HTTP" dir=in action=allow protocol=TCP localport=5985
+
+# Verify
+winrm enumerate winrm/config/listener
+netstat -an | findstr ":5985"
+Get-Service WinRM
+
+On Linux attacker
+# if gem installed
+evil-winrm -i 10.x.x.124 -u Administrator -p 'YourDecryptedPassword'
+
+# If you need SSL
+evil-winrm -i 18.xxx.xx.xx -u Administrator -p 'pw' -S -v
