@@ -1,0 +1,44 @@
+#Objective: 
+
+Firstly,
+Install Elasticsearch/Kibana on EC2 (or use Elastic Cloud), create index pattern
+
+
+#Steps & commands
+
+# Amazon Linux 2 example (dev)
+sudo yum install -y java-11-openjdk-devel
+
+# download and extract Elasticsearch & Kibana (choose versions)
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-<VER>-linux-x86_64.tar.gz
+tar -xzf elasticsearch-<VER>-linux-x86_64.tar.gz
+./elasticsearch-<VER>/bin/elasticsearch &
+
+# Kibana
+wget https://artifacts.elastic.co/downloads/kibana/kibana-<VER>-linux-x86_64.tar.gz
+tar -xzf kibana-<VER>-linux-x86_64.tar.gz
+./kibana-<VER>/bin/kibana &
+
+Secondly,
+Open SG port 5601 to your IP (lab):
+
+aws ec2 authorize-security-group-ingress --group-id <KIBANA_SG> --protocol tcp --port 5601 --cidr $(curl -s https://checkip.amazonaws.com)/32
+
+Thirdly,
+Create index pattern via Kibana API:
+curl -X POST "http://<KIBANA_HOST>:5601/api/saved_objects/index-pattern" \
+  -H "kbn-xsrf: true" -H "Content-Type: application/json" \
+  -d '{"attributes":{"title":"cloud-logs-*","timeFieldName":"@timestamp"}}'
+
+#Troubleshooting
+
+If curl times out → SG or Kibana not running or bound to localhost only. Check Kibana logs and ensure server.host in kibana.yml is set to 0.0.0.0 or your interface.
+
+
+
+
+If 5601 already in use → another process is running. Stop old Kibana or pick a different port.
+
+#Lesson
+
+Ensure Kibana binds to correct interface and SG allows your client IP.
