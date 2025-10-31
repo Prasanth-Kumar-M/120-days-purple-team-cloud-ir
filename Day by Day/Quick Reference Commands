@@ -1,0 +1,19 @@
+Here i have given some troubleshooting commands that could help you !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Get Instance IP
+aws ec2 describe-instances --instance-ids i-... --query 'Reservations[0].Instances[0].[PublicIpAddress,PrivateIpAddress,SubnetId]' --output text
+
+Test TCP port
+nc -vz <IP> <PORT>
+
+
+Test WinRM endpoint
+curl -m 8 -v http://<IP>:5985/wsman
+curl -m 8 -vk https://<IP>:5986/wsman
+
+Add SG rule for attacker (private IP)
+aws ec2 authorize-security-group-ingress --group-id sg-XXXX --protocol tcp --port 5985 --cidr 10.x.x.174/32 --region us-east-2
+
+Start SSM session
+aws ssm start-session --target i-... --region us-east-2
