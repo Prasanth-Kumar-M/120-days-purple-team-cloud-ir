@@ -1,0 +1,32 @@
+Tried Enter-PSSession in bash (PowerShell cmdlets) → syntax errors. Lesson: Use proper client (PowerShell on Windows client) or use Linux tools (pywinrm/evil-winrm).
+
+evil-winrm gem install failed due to system Ruby < required version and OpenSSL compatibility (urllib3 v2 / OpenSSL mismatch). Fixes:
+
+Use pywinrm (fast), or
+
+Install Ruby >=3 (system compile to /usr/local or rbenv), then gem install evil-winrm, or
+
+Use Docker container with evil-winrm image.
+
+Misused AWS Console “My IP” (returned local laptop IP) while working from CloudShell. Lesson: Always run curl https://checkip.amazonaws.com in the environment that originates the connection and whitelist that IP.
+
+nc to private IP timed out; found that either SG lacked rule referencing attacker private IP or Windows firewall not configured  fixed by adding SG ingress for attacker private IP and enabling WinRM listener on Windows.
+
+
+
+# from attacker
+nc -vz 10.x.x.124 5985
+curl -m 8 -v http://10.x.x.124:5985/wsman
+
+# from Windows (Admin)
+winrm enumerate winrm/config/listener
+netstat -an | findstr 5985
+netsh advfirewall firewall add rule name="WinRM HTTP" dir=in action=allow protocol=TCP localport=5985
+
+#Lessons
+
+When networking works (nc connects), remaining problems are service config / auth.
+
+For lab simplicity, AllowUnencrypted=true + Basic auth is fine, but never for production.
+
+Prefer private IPs within same VPC and security-group-to-security-group rules.
