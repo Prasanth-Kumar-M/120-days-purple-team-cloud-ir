@@ -1,0 +1,15 @@
+# Sysmon installation
+C:\Temp\Sysmon\Sysmon64.exe -accepteula -i C:\Temp\Sysmon\sysmon-config.xml
+
+# Verify Sysmon service and logs
+Get-Service Sysmon
+Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational" -MaxEvents 10
+
+# Install Winlogbeat service
+.\winlogbeat.exe install
+
+# Start service
+Start-Service winlogbeat
+
+# Tail logs
+Get-Content -Path "C:\ProgramData\winlogbeat\Logs\winlogbeat" -Tail 50 -Wait:$false
