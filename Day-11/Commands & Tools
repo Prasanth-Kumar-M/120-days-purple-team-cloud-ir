@@ -1,0 +1,4 @@
+sudo filebeat setup
+sudo filebeat -e -d "*"
+aws s3 ls
+aws sqs list-queues
