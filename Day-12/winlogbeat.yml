@@ -1,0 +1,16 @@
+
+```yaml
+winlogbeat.event_logs:
+  - name: Microsoft-Windows-Sysmon/Operational
+    ignore_older: 72h
+
+# Local output for testing
+output.console:
+  enabled: true
+
+  #If you forward to Elastic Cloud/Logstash later, replace output.console with:
+
+#output.elasticsearch:
+  #hosts: ["https://your-elasticsearch-domain:9200"]
+  #username: "elastic"
+  #password: "your-password"
