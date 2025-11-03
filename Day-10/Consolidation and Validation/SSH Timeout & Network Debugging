@@ -1,0 +1,54 @@
+Resolve SSH timeouts and understand AWS networking.
+
+
+Problem observed
+ssh -i purple-lab.pem ec2-user@<ip> timed out.
+
+]
+Root causes investigated
+
+No public IP.
+SG missing inbound port 22.
+Subnet route table missing IGW.
+NACL blocking.
+EC2 internal firewall blocking.
+Wrong username / wrong key.
+
+Commands (diagnostic & remediation)
+# List instances and key info
+aws ec2 describe-instances --query "Reservations[].Instances[].{ID:InstanceId,State:State.Name,PublicIp:PublicIpAddress,KeyName:KeyName,SubnetId:SubnetId,VpcId:VpcId,SG:SecurityGroups}" --output table
+
+# Test TCP to SSH
+nc -vz <IP> 22
+
+# Get your public IP
+curl -s https://checkip.amazonaws.com
+
+# Add SSH inbound rule for your IP
+MYIP=$(curl -s https://checkip.amazonaws.com)/32
+aws ec2 authorize-security-group-ingress --group-id <SG-ID> --protocol tcp --port 22 --cidr $MYIP
+
+# Check route table for subnet
+aws ec2 describe-route-tables --filters "Name=association.subnet-id,Values=<SUBNET-ID>" --query "RouteTables[].Routes" --output json
+
+# Allocate & associate Elastic IP (if instance missing public IP)
+ALLOCATION_ID=$(aws ec2 allocate-address --domain vpc --query 'AllocationId' --output text)
+aws ec2 associate-address --instance-id <INSTANCE-ID> --allocation-id $ALLOCATION_ID
+
+
+
+Troubleshooting
+
+Check instance PublicIpAddress and SubnetId.
+nc -vz <IP> 22 — if timeout → SG / route / NACL problem.
+Check SG rules for port 22 from your IP.
+Check route table: 0.0.0.0/0 → IGW for public subnets.
+Check instance OS firewall (iptables / Windows Firewall).
+If you have SSM, use it to access instance without opening SSH.
+
+
+Lessons
+
+Debug top→down: network → host firewall → service config.
+Use SSM as fallback.
+Avoid 0.0.0.0/0 for SSH in production.
